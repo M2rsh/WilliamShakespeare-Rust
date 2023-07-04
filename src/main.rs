@@ -22,6 +22,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| commands::hello::register(command))
                 .create_application_command(|command| commands::loggingtest::register(command))
         }).await;
+        
         if let Ok(i) = global_commands {
             for command in i {
                 info!("Registered command: {:#?}", command.name)
