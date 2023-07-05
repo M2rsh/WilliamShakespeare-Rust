@@ -1,6 +1,7 @@
 mod commands;
 
 use std::{env};
+use chrono::Utc;
 
 use serenity::async_trait;
 use serenity::model::application::command::Command;
@@ -21,6 +22,7 @@ impl EventHandler for Handler {
             commands
                 .create_application_command(|command| commands::hello::register(command))
                 .create_application_command(|command| commands::loggingtest::register(command))
+                .create_application_command(|command| commands::say::register(command))
         }).await;
         if let Ok(i) = global_commands {
             for command in i {
@@ -36,11 +38,12 @@ impl EventHandler for Handler {
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            info!("Received command interaction: {:#?}", command.user.name);
+            info!("Command interaction: {:#?}, Command: {:#?}", command.user.name, command.data.name);
 
             match command.data.name.as_str() {
                 "hello" => commands::hello::run(ctx, command).await,
                 "loggingtest" => commands::loggingtest::run(ctx, command).await,
+                "say" => commands::say::run(ctx, command).await,
                 _ => command.create_interaction_response(&ctx.http, |response| {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
@@ -53,7 +56,8 @@ impl EventHandler for Handler {
 
 #[tokio::main]
 async fn main() {
-    let file_appender = tracing_appender::rolling::never("/home/m2rsh/Documents/IdeaProjects/WilliamShakespeare-Rust/logs", "prefix.log");
+    let timestamp = Utc::now().timestamp();
+    let file_appender = tracing_appender::rolling::never("logs/", format!("{timestamp}.log"));
     let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
 
     tracing_subscriber::registry()
