@@ -38,22 +38,15 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             info!("Received command interaction: {:#?}", command.user.name);
 
-            let content = match command.data.name.as_str() {
-                "hello" => commands::hello::run(&command.data.options),
-                "loggingtest" => commands::loggingtest::run(&command.data.options),
-                _ => "not implemented :(".to_string(),
-            };
-
-            if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
+            match command.data.name.as_str() {
+                "hello" => commands::hello::run(ctx, command).await,
+                "loggingtest" => commands::loggingtest::run(ctx, command).await,
+                _ => command.create_interaction_response(&ctx.http, |response| {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(content))
-                })
-                .await
-            {
-                error!("Cannot respond to slash command: {}", why);
-            }
+                        .interaction_response_data(|message| message.content("Failed to handle command"))
+                }).await
+            }.expect("TODO: panic message");
         }
     }
 }
