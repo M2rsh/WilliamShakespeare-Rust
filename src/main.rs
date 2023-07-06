@@ -23,6 +23,7 @@ impl EventHandler for Handler {
                 .create_application_command(|command| commands::hello::register(command))
                 .create_application_command(|command| commands::loggingtest::register(command))
                 .create_application_command(|command| commands::say::register(command))
+                .create_application_command(|command| commands::pp::register(command))
         }).await;
         if let Ok(i) = global_commands {
             for command in i {
@@ -44,6 +45,7 @@ impl EventHandler for Handler {
                 "hello" => commands::hello::run(ctx, command).await,
                 "loggingtest" => commands::loggingtest::run(ctx, command).await,
                 "say" => commands::say::run(ctx, command).await,
+                "pp" => commands::pp::run(ctx, command).await,
                 _ => command.create_interaction_response(&ctx.http, |response| {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)
