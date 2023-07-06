@@ -1,3 +1,4 @@
+use serenity::model::timestamp::Timestamp;
 use serenity::builder::CreateApplicationCommand;
 use serenity::model::prelude::application_command::{ApplicationCommandInteraction};
 use serenity::model::prelude::command::{CommandOptionType};
@@ -26,6 +27,7 @@ pub async fn run(_ctx: Context, _command: ApplicationCommandInteraction) -> Resu
                     message.embed(|embed| {
                         embed.description(format!("{} pp size is {:.2}cm - {:.2}inch", user.mention(), pp_size, pp_size_inch))
                             .colour(Colour::from_rgb(193, 188, 244))
+                            .timestamp(Timestamp::now())
                     })
                 )
         }).await.expect("TODO: panic message");
