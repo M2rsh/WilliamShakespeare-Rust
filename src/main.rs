@@ -1,17 +1,17 @@
 mod commands;
 
-use std::{env};
 use chrono::Utc;
+use std::env;
 
 use serenity::async_trait;
 use serenity::model::application::command::Command;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
-use serenity::model::gateway::Ready;
 use serenity::model::event::ResumedEvent;
+use serenity::model::gateway::Ready;
 use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tracing::{debug, error, info, instrument};
-use tracing_subscriber::{EnvFilter, prelude::*};
+use tracing_subscriber::{prelude::*, EnvFilter};
 
 struct Handler;
 
@@ -28,7 +28,8 @@ impl EventHandler for Handler {
                 .create_application_command(|command| commands::say::register(command))
                 .create_application_command(|command| commands::pp::register(command))
                 .create_application_command(|command| commands::info::register(command))
-        }).await;
+        })
+            .await;
         if let Ok(i) = global_commands {
             for command in i {
                 info!("Registered command: {:#?}", command.name)
@@ -43,7 +44,10 @@ impl EventHandler for Handler {
 
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            info!("Command interaction: {:#?}, Command: {:#?}", command.user.name, command.data.name);
+            info!(
+                "Command interaction: {:#?}, Command: {:#?}",
+                command.user.name, command.data.name
+            );
 
             match command.data.name.as_str() {
                 "hello" => commands::hello::run(ctx, command).await,
@@ -51,12 +55,19 @@ impl EventHandler for Handler {
                 "say" => commands::say::run(ctx, command).await,
                 "pp" => commands::pp::run(ctx, command).await,
                 "info" => commands::info::run(ctx, command).await,
-                _ => command.create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content("Failed to handle command"))
-                }).await
-            }.expect("TODO: panic message");
+                _ => {
+                    command
+                        .create_interaction_response(&ctx.http, |response| {
+                            response
+                                .kind(InteractionResponseType::ChannelMessageWithSource)
+                                .interaction_response_data(|message| {
+                                    message.content("Failed to handle command")
+                                })
+                        })
+                        .await
+                }
+            }
+                .expect("TODO: panic message");
         }
     }
 }
@@ -69,15 +80,12 @@ async fn main() {
 
     tracing_subscriber::registry()
         .with(EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
-        .with(
-            tracing_subscriber::fmt::layer()
-                  .compact()
-        )
+        .with(tracing_subscriber::fmt::layer().compact())
         .with(
             tracing_subscriber::fmt::layer()
                 .with_writer(non_blocking)
                 .with_ansi(false)
-                .compact()
+                .compact(),
         )
         .init();
 
