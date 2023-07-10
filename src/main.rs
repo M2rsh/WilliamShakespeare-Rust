@@ -8,6 +8,7 @@ use serenity::model::application::command::Command;
 use serenity::model::application::interaction::{Interaction, InteractionResponseType};
 use serenity::model::gateway::Ready;
 use serenity::model::event::ResumedEvent;
+use serenity::model::prelude::Activity;
 use serenity::prelude::*;
 use tracing::{debug, error, info, instrument};
 use tracing_subscriber::{EnvFilter, prelude::*};
@@ -18,12 +19,15 @@ struct Handler;
 impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("{} is connected!", ready.user.name);
-        let global_commands= Command::set_global_application_commands(&ctx.http, |commands| {
+        ctx.set_activity(Activity::playing("with my breasts")).await;
+
+        let global_commands = Command::set_global_application_commands(&ctx.http, |commands| {
             commands
                 .create_application_command(|command| commands::hello::register(command))
                 .create_application_command(|command| commands::loggingtest::register(command))
                 .create_application_command(|command| commands::say::register(command))
                 .create_application_command(|command| commands::pp::register(command))
+                .create_application_command(|command| commands::info::register(command))
         }).await;
         if let Ok(i) = global_commands {
             for command in i {
@@ -46,6 +50,7 @@ impl EventHandler for Handler {
                 "loggingtest" => commands::loggingtest::run(ctx, command).await,
                 "say" => commands::say::run(ctx, command).await,
                 "pp" => commands::pp::run(ctx, command).await,
+                "info" => commands::info::run(ctx, command).await,
                 _ => command.create_interaction_response(&ctx.http, |response| {
                     response
                         .kind(InteractionResponseType::ChannelMessageWithSource)

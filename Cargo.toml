@@ -1,5 +1,8 @@
 [package]
 name = "william_shakespeare_rust"
+authors = ["M2rsh"]
+repository = "https://github.com/M2rsh/WilliamShakespeare-Rust"
+license = "GPL-3.0"
 version = "0.1.0"
 edition = "2021"
 
