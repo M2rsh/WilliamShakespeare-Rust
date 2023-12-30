@@ -1,46 +1,30 @@
-use serenity::builder::CreateApplicationCommand;
-use serenity::model::prelude::application_command::ApplicationCommandInteraction;
-use serenity::model::prelude::command::CommandOptionType;
-use serenity::model::prelude::interaction::application_command::CommandDataOptionValue;
-use serenity::model::prelude::InteractionResponseType;
-use serenity::prelude::Context;
+use crate::{Context, Error};
+use regex::Regex;
 
-pub async fn run(
-    _ctx: Context,
-    _command: ApplicationCommandInteraction,
-) -> Result<(), serenity::Error> {
-    let option = &_command
-        .data
-        .options
-        .get(0)
-        .expect("Expected string")
-        .resolved
-        .as_ref()
-        .expect("Expected string");
+fn sanitize_message(message: &str) -> String {
+    let pattern_str = r#"<@!?(\d+)>|@(everyone|here|&\d+)"#;
+    let pattern = Regex::new(pattern_str).expect("Invalid regex pattern");
 
-    if let CommandDataOptionValue::String(_message) = option {
-        _command
-            .create_interaction_response(&_ctx.http, |response| {
-                response
-                    .kind(InteractionResponseType::ChannelMessageWithSource)
-                    .interaction_response_data(|message| message.content(_message.to_string()))
-            })
-            .await
-            .expect("TODO: panic message");
-    }
+    let result = pattern.replace_all(message, |caps: &regex::Captures| {
+        let p1 = caps.get(1).map_or("", |m| m.as_str());
+        //let p2 = caps.get(2).map_or("", |m| m.as_str());
+        
+        if !p1.is_empty() {
+            caps[0].to_string()
+        } else {
+            "@lol no".to_string()
+        }
+    });
 
-    Ok(())
+    result.into_owned()
 }
 
-pub fn register(command: &mut CreateApplicationCommand) -> &mut CreateApplicationCommand {
-    command
-        .name("say")
-        .description("Say a message using bot")
-        .create_option(|option| {
-            option
-                .name("message")
-                .description("The message to send")
-                .kind(CommandOptionType::String)
-                .required(true)
-        })
+/// Say something using the bot
+#[poise::command(slash_command)]
+pub async fn say(
+        ctx: Context<'_>, 
+        #[description = "Text"] text: String,
+    ) -> Result<(), Error> {
+    ctx.say(format!("{}", sanitize_message(&text))).await?;
+    Ok(())
 }

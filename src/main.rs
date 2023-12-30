@@ -1,102 +1,105 @@
 mod commands;
 
-use chrono::Utc;
-use std::env;
+use poise::serenity_prelude as serenity;
+use poise::Event;
 
-use serenity::async_trait;
-use serenity::model::application::command::Command;
-use serenity::model::application::interaction::{Interaction, InteractionResponseType};
-use serenity::model::event::ResumedEvent;
-use serenity::model::gateway::Ready;
-use serenity::model::prelude::Activity;
-use serenity::prelude::*;
-use tracing::{debug, error, info, instrument};
-use tracing_subscriber::{prelude::*, EnvFilter};
+use log::info;
+use log::LevelFilter;
+use log4rs::append::console::ConsoleAppender;
+use log4rs::append::rolling_file::RollingFileAppender;
+use log4rs::append::rolling_file::policy::compound::CompoundPolicy;
+use log4rs::append::rolling_file::policy::compound::trigger::size::SizeTrigger;
+use log4rs::append::rolling_file::policy::compound::roll::fixed_window::FixedWindowRoller;
+use log4rs::encode::pattern::PatternEncoder;
+use log4rs::config::{Appender, Config, Logger, Root};
 
-struct Handler;
-
-#[async_trait]
-impl EventHandler for Handler {
-    async fn ready(&self, ctx: Context, ready: Ready) {
-        info!("{} is connected!", ready.user.name);
-        ctx.set_activity(Activity::playing("with my breasts")).await;
-
-        let global_commands = Command::set_global_application_commands(&ctx.http, |commands| {
-            commands
-                .create_application_command(|command| commands::hello::register(command))
-                .create_application_command(|command| commands::loggingtest::register(command))
-                .create_application_command(|command| commands::say::register(command))
-                .create_application_command(|command| commands::pp::register(command))
-                .create_application_command(|command| commands::info::register(command))
-        })
-            .await;
-        if let Ok(i) = global_commands {
-            for command in i {
-                info!("Registered command: {:#?}", command.name)
-            }
-        }
-    }
-
-    #[instrument(skip(self, _ctx))]
-    async fn resume(&self, _ctx: Context, resume: ResumedEvent) {
-        debug!("Resumed; trace: {:?}", resume.trace);
-    }
-
-    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(command) = interaction {
-            info!(
-                "Command interaction: {:#?}, Command: {:#?}",
-                command.user.name, command.data.name
-            );
-
-            match command.data.name.as_str() {
-                "hello" => commands::hello::run(ctx, command).await,
-                "loggingtest" => commands::loggingtest::run(ctx, command).await,
-                "say" => commands::say::run(ctx, command).await,
-                "pp" => commands::pp::run(ctx, command).await,
-                "info" => commands::info::run(ctx, command).await,
-                _ => {
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response
-                                .kind(InteractionResponseType::ChannelMessageWithSource)
-                                .interaction_response_data(|message| {
-                                    message.content("Failed to handle command")
-                                })
-                        })
-                        .await
-                }
-            }
-                .expect("TODO: panic message");
-        }
-    }
-}
+struct Data {} // User data, which is stored and accessible in all command invocations
+type Error = Box<dyn std::error::Error + Send + Sync>;
+type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[tokio::main]
 async fn main() {
-    let timestamp = Utc::now().timestamp();
-    let file_appender = tracing_appender::rolling::never("logs/", format!("{timestamp}.log"));
-    let (non_blocking, _guard) = tracing_appender::non_blocking(file_appender);
+    // Log4rs cofig and setup
+    let window_size = 24;
+    let fixed_window_roller = FixedWindowRoller::builder().build("log/log-{}.log", window_size).unwrap();
 
-    tracing_subscriber::registry()
-        .with(EnvFilter::from_default_env().add_directive(tracing::Level::INFO.into()))
-        .with(tracing_subscriber::fmt::layer().compact())
-        .with(
-            tracing_subscriber::fmt::layer()
-                .with_writer(non_blocking)
-                .with_ansi(false)
-                .compact(),
-        )
-        .init();
+    let size_limit = 512 * 1024; // 512KB
+    let size_trigger = SizeTrigger::new(size_limit);
+    let compound_policy = CompoundPolicy::new(Box::new(size_trigger), Box::new(fixed_window_roller));
 
-    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+    let stdout = ConsoleAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d(%+)(utc)} {h({l})} {m}{n}")))
+        .build();
 
-    let mut client = Client::builder(token, GatewayIntents::empty())
-        .event_handler(Handler)
-        .await
-        .expect("Error creating client");
+    let info_file = RollingFileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d(%+)(utc)} [{f}:{L}] {h({l})} {M}:{m}{n}")))
+        .build("log/log.log", Box::new(compound_policy))
+        .unwrap();
 
-    if let Err(why) = client.start().await {
-        error!("Client error: {:?}", why);
+    let config = Config::builder()
+        .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .appender(Appender::builder().build("info_file", Box::new(info_file)))
+        .logger(Logger::builder()
+            .appender("info_file")
+            .appender("stdout")
+            .additive(false)
+            .build("william_shakespeare_rust", LevelFilter::Info))
+        .build(Root::builder().appender("stdout").build(LevelFilter::Warn))
+        .unwrap();
+
+    let _handle = log4rs::init_config(config).unwrap();
+
+    // Bot initialization
+    let framework = poise::Framework::builder()
+        .options(poise::FrameworkOptions {
+            commands: vec![commands::say::say()],
+            event_handler: |ctx, event, framework, data| {
+                Box::pin(event_handler(ctx, event, framework, data))
+            },
+            ..Default::default()
+        })
+        .token(std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN"))
+        .intents(serenity::GatewayIntents::non_privileged())
+        .setup(|ctx, _ready, framework| {
+            Box::pin(async move {
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                Ok(Data {})
+            })
+        });
+
+    framework.run().await.unwrap();
+}
+
+async fn event_handler(
+    _ctx: &serenity::Context,
+    event: &Event<'_>,
+    _framework: poise::FrameworkContext<'_, Data, Error>,
+    _data: &Data,
+) -> Result<(), Error> {
+    match event {
+        Event::Ready { data_about_bot, .. } => {
+            info!("Logged in as {}", data_about_bot.user.name);
+        }
+        Event::InteractionCreate { interaction, .. } => {
+            let data = interaction.clone().application_command().unwrap();
+            let mut options: String = String::new();
+            
+            // I am very stupid
+            for i in data.data.options {
+                if let Some(data_from_value) = i.value {
+                    if !options.is_empty() {
+                        options.push_str(", ");
+                    }
+                    options.push_str(&format!("{}: {}", &i.name, data_from_value));
+                }
+            }
+
+            info!(
+                "{} ran command '{}' with options '{}'",
+                data.user.name, data.data.name, options
+            )
+        }
+        _ => {}
     }
+    Ok(())
 }

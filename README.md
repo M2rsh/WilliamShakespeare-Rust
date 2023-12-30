@@ -1,2 +1,2 @@
 # WilliamShakespeare-Rust
-Discord bot written in rust
+Why am I doing this to myself?? Am I stupid??? (yes)

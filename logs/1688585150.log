@@ -1,7 +1,0 @@
-2023-07-05T19:25:50.563617Z  INFO start:start_connection:initialize:boot: serenity::client::bridge::gateway::shard_manager: Telling shard queuer to start shard 0 [3mshard_data[0m[2m=[0m[0, 0, 1] [3mshard_info[0m[2m=[0m[ShardId(0), ShardId(1)]
-2023-07-05T19:25:50.829949Z  INFO run: serenity::client::bridge::gateway::shard_runner: [ShardRunner [0, 1]] Running
-2023-07-05T19:25:51.077708Z  INFO william_shakespeare_rust: William Shakespeare Development is connected!
-2023-07-05T19:25:51.471894Z  INFO william_shakespeare_rust: Registered command: "hello"
-2023-07-05T19:25:51.472035Z  INFO william_shakespeare_rust: Registered command: "loggingtest"
-2023-07-05T19:25:51.472098Z  INFO william_shakespeare_rust: Registered command: "say"
-2023-07-05T19:28:14.477461Z  INFO william_shakespeare_rust: Command interaction: "lizzybobizzymcskizzy", Command: "say"
