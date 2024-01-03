@@ -52,7 +52,10 @@ async fn main() {
     // Bot initialization
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![commands::say::say()],
+            commands: vec![
+                    commands::say::say(),
+                    commands::pp::pp()
+                ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
             },

@@ -10,5 +10,7 @@ log = "0.4.20"
 log4rs = { version = "1.2.0", features = [ "background_rotation", "rolling_file_appender", "compound_policy", "size_trigger", "fixed_window_roller" ] }
 poise = "0.5.7"
 poise_macros = "0.6.0"
+rand = "0.8.5"
+rand_distr = "0.4.3"
 regex = "1.10.2"
 tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread"] }
