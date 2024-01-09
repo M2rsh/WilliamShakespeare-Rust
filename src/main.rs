@@ -54,7 +54,10 @@ async fn main() {
         .options(poise::FrameworkOptions {
             commands: vec![
                     commands::say::say(),
-                    commands::pp::pp()
+                    commands::pp::pp(),
+                    commands::gay::gay(),
+                    commands::iq::iq(),
+                    commands::botinfo::botinfo()
                 ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
