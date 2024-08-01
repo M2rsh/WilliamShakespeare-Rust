@@ -9,10 +9,12 @@ pub async fn run(
     #[rest]
     mut command: Option<String>,
 ) -> Result<(), Error> {
-    command = match command {
-        Some(c) => Some(format!("{} {}", ctx.invoked_command_name(), c)),
-        None => Some(ctx.invoked_command_name().to_string()),
-    };
+    if ctx.invoked_command_name() != "help" {
+        command = match command {
+            Some(c) => Some(format!("{} {}", ctx.invoked_command_name(), c)),
+            None => Some(ctx.invoked_command_name().to_string()),
+        };
+    }
     let extra_text_at_bottom = "\
 Use `/help <Command>` for more info on a command.";
 
