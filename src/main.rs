@@ -23,8 +23,8 @@ async fn main() {
         })
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
-                //poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                poise::builtins::register_in_guild(ctx, &framework.options().commands, 885976189049651200.into()).await?;
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                //poise::builtins::register_in_guild(ctx, &framework.options().commands, 885976189049651200.into()).await?;
                 Ok(Data {})
             })
         })
