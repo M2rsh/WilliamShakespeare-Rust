@@ -1,4 +1,4 @@
-use crate::{Context, Error};
+use crate::{Context, Error, CONFIG};
 use poise::{serenity_prelude::{self as serenity, CreateEmbed}, CreateReply};
 use rand_distr::{Distribution, Normal};
 
@@ -8,6 +8,7 @@ pub async fn run(
     ctx: Context<'_>,
     #[description = "Person"] user: Option<serenity::User>,
 ) -> Result<(), Error> {
+
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
     let iq: f64 = Normal::new(100.0, 25.0).unwrap()
@@ -22,15 +23,13 @@ pub async fn run(
         (186.0*colour_thingy) as u8
     );
 
-    // is there a better way of doing this?
-    // TODO: better emojis or something idk
     let emoji;
     if iq >= 110.0 {
-        emoji = "<:bigbrain:1268613441694732305>";
+        emoji = &CONFIG.emojis.bigbrain;
     } else if 90.0 >= iq {
-        emoji = "<:brainless:1268614994694508596>";
+        emoji = &CONFIG.emojis.nobrain;
     } else {
-        emoji = "<:brain:1268615230900932660>";
+        emoji = &CONFIG.emojis.justbrain;
     }
 
     let embed = CreateEmbed::default()

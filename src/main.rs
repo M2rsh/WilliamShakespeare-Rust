@@ -1,14 +1,34 @@
-use poise::serenity_prelude as serenity;
+#[macro_use]
+extern crate lazy_static;
 
 mod commands;
+use config_file::FromConfigFile;
+use poise::serenity_prelude as serenity;
+use serde::Deserialize;
 
 pub struct Data {} // User data, which is stored and accessible in all command invocations
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
 
+#[derive(Deserialize)]
+struct Config {
+    discord_token: String,
+    emojis: Emojis,
+}
+
+#[derive(Deserialize)]
+struct Emojis {
+    bigbrain: String,
+    nobrain: String,
+    justbrain: String,
+}
+
+lazy_static! {
+    static ref CONFIG: Config = Config::from_config_file("Settings.toml").unwrap();
+}
+
 #[tokio::main]
 async fn main() {
-    let token = std::env::var("DISCORD_TOKEN").expect("missing DISCORD_TOKEN");
     let intents = serenity::GatewayIntents::non_privileged();
 
     let framework = poise::Framework::builder()
@@ -30,7 +50,7 @@ async fn main() {
         })
         .build();
 
-    let client = serenity::ClientBuilder::new(token, intents)
+    let client = serenity::ClientBuilder::new(&CONFIG.discord_token, intents)
         .framework(framework)
         .await;
     client.unwrap().start().await.unwrap();
