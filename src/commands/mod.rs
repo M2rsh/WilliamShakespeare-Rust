@@ -1,5 +1,4 @@
-pub mod say;
+pub mod help;
+pub mod info;
 pub mod pp;
 pub mod iq;
-pub mod gay;
-pub mod botinfo;
