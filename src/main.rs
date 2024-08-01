@@ -2,6 +2,7 @@
 extern crate lazy_static;
 
 mod commands;
+
 use config_file::FromConfigFile;
 use poise::serenity_prelude as serenity;
 use serde::Deserialize;
@@ -13,6 +14,7 @@ pub type Context<'a> = poise::Context<'a, Data, Error>;
 #[derive(Deserialize)]
 struct Config {
     discord_token: String,
+    rig_ids: Vec<u64>,
     emojis: Emojis,
 }
 
