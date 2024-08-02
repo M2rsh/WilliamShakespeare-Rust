@@ -10,6 +10,7 @@ use serde::Deserialize;
 pub struct Data {} // User data, which is stored and accessible in all command invocations
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
+pub static VERSION: &str = "1.0.0";
 
 #[derive(Deserialize)]
 struct Config {
@@ -41,6 +42,9 @@ async fn main() {
                 commands::pp::run(),
                 commands::iq::run(),
             ],
+            event_handler: |ctx, event, framework, data| {
+                Box::pin(event_handler(ctx, event, framework, data))
+            },
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
@@ -56,4 +60,23 @@ async fn main() {
         .framework(framework)
         .await;
     client.unwrap().start().await.unwrap();
+}
+
+async fn event_handler(
+    _ctx: &serenity::Context,
+    event: &serenity::FullEvent,
+    _framework: poise::FrameworkContext<'_, Data, Error>,
+    _data: &Data,
+) -> Result<(), Error> {
+    match event {
+        serenity::FullEvent::Ready { data_about_bot, .. } => {
+            println!("Logged in as {}, Version: {}", data_about_bot.user.name, VERSION);
+        }
+        serenity::FullEvent::InteractionCreate { interaction } => {
+            let data = interaction.clone().command().unwrap();
+            println!("Command `{}` used by `{} - {}`", data.data.name, data.user.name, data.user.id)
+        }
+        _ => {}
+    }
+    Ok(())
 }

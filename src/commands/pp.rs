@@ -3,6 +3,8 @@ use poise::{serenity_prelude::{self as serenity, CreateEmbed}, CreateReply};
 use rand_distr::{Distribution, Normal};
 
 /// Measure pp size
+/// 
+/// Cooldown: 3 seconds
 #[poise::command(slash_command, user_cooldown = 3, rename = "pp", category = "Fun")]
 pub async fn run(
     ctx: Context<'_>,

@@ -2,6 +2,8 @@ use crate::{Context, Error};
 use poise::samples::HelpConfiguration;
 
 /// Show help message
+/// 
+/// Cooldown: 5 seconds
 #[poise::command(slash_command, user_cooldown=5, rename="help", category = "Utility")]
 pub async fn run(
     ctx: Context<'_>,
