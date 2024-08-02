@@ -39,6 +39,7 @@ async fn main() {
             commands: vec![
                 commands::help::run(),
                 commands::info::run(),
+                commands::serverinfo::run(),
                 commands::pp::run(),
                 commands::iq::run(),
             ],

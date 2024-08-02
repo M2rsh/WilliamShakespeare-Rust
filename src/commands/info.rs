@@ -4,7 +4,7 @@ use poise::{
     CreateReply,
 };
 
-/// Bot info command
+/// Bot info
 ///
 /// Cooldown: 5 seconds
 #[poise::command(
@@ -15,10 +15,10 @@ use poise::{
 )]
 pub async fn run(ctx: Context<'_>) -> Result<(), Error> {
     let embed = CreateEmbed::default()
-        .description("I'm a Discord bot written in Rust.")
+        .description("I'm a Discord bot written in Rust. (Work in Progress)")
         .field("Version", VERSION, true)
         .field("Contributors", "<@846298981797724161>", true)
-        .color(0x31748f);
+        .colour(0x31748f);
     let action_row = CreateActionRow::Buttons(vec![
         CreateButton::new_link("https://github.com/M2rsh/WilliamShakespeare-Rust")
             .label("Source code"),
