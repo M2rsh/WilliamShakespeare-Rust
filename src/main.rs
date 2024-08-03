@@ -10,7 +10,7 @@ use serde::Deserialize;
 pub struct Data {} // User data, which is stored and accessible in all command invocations
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
-pub static VERSION: &str = "1.0.0";
+pub static VERSION: &str = "1.1.0";
 
 #[derive(Deserialize)]
 struct Config {
@@ -55,8 +55,8 @@ async fn main() {
         })
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
-                //poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                poise::builtins::register_in_guild(ctx, &framework.options().commands, 885976189049651200.into()).await?;
+                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                //poise::builtins::register_in_guild(ctx, &framework.options().commands, 885976189049651200.into()).await?;
                 Ok(Data {})
             })
         })
