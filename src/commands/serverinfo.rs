@@ -4,7 +4,7 @@ use poise::{serenity_prelude::CreateEmbed, CreateReply};
 /// Server info
 /// 
 /// Cooldown: 5 seconds
-#[poise::command(slash_command, user_cooldown = 5, rename = "serverinfo", category = "Utility")]
+#[poise::command(slash_command, guild_only, user_cooldown = 5, rename = "serverinfo", category = "Utility")]
 pub async fn run(
     ctx: Context<'_>,
 ) -> Result<(), Error> {

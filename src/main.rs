@@ -1,11 +1,16 @@
 #[macro_use]
 extern crate lazy_static;
 
-mod commands;
-
 use config_file::FromConfigFile;
 use poise::serenity_prelude as serenity;
 use serde::Deserialize;
+use log::{info, LevelFilter};
+use log4rs::append::console::ConsoleAppender;
+use log4rs::append::file::FileAppender;
+use log4rs::config::{Appender, Config, Logger, Root};
+use log4rs::encode::pattern::PatternEncoder;
+
+mod commands;
 
 pub struct Data {} // User data, which is stored and accessible in all command invocations
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -13,7 +18,7 @@ pub type Context<'a> = poise::Context<'a, Data, Error>;
 pub static VERSION: &str = "1.1.0";
 
 #[derive(Deserialize)]
-struct Config {
+struct ConfigStruct {
     discord_token: String,
     rig_ids: Vec<u64>,
     emojis: Emojis,
@@ -30,12 +35,31 @@ struct Emojis {
 }
 
 lazy_static! {
-    static ref CONFIG: Config = Config::from_config_file("Settings.toml").unwrap();
+    static ref CONFIG: ConfigStruct = ConfigStruct::from_config_file("Settings.toml").unwrap();
 }
 
 #[tokio::main]
 async fn main() {
     let intents = serenity::GatewayIntents::non_privileged();
+    let stdout = ConsoleAppender::builder().build();
+
+    let log_file = FileAppender::builder()
+        .encoder(Box::new(PatternEncoder::new("{d} - {m}{n}")))
+        .build(format!("log/{:?}.log", chrono::offset::Local::now()))
+        .unwrap();
+
+    let config = Config::builder()
+        .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .appender(Appender::builder().build("file", Box::new(log_file)))
+        .logger(
+            Logger::builder()
+                .appender("file")
+                .build("william_shakespeare", LevelFilter::Info),
+        )
+        .build(Root::builder().appender("stdout").build(LevelFilter::Error))
+        .unwrap();
+
+    let _handle = log4rs::init_config(config).unwrap();
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -76,11 +100,17 @@ async fn event_handler(
 ) -> Result<(), Error> {
     match event {
         serenity::FullEvent::Ready { data_about_bot, .. } => {
-            println!("Logged in as {}, Version: {}", data_about_bot.user.name, VERSION);
+            info!(
+                "Logged in as {}, Version: {}",
+                data_about_bot.user.name, VERSION
+            );
         }
         serenity::FullEvent::InteractionCreate { interaction } => {
             let data = interaction.clone().command().unwrap();
-            println!("Command `{}` used by `{} - {}`", data.data.name, data.user.name, data.user.id)
+            info!(
+                "Command `{}` used by `{} - {}`",
+                data.data.name, data.user.name, data.user.id
+            )
         }
         _ => {}
     }
