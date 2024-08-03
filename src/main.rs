@@ -21,9 +21,12 @@ struct Config {
 
 #[derive(Deserialize)]
 struct Emojis {
-    bigbrain: String,
-    nobrain: String,
-    justbrain: String,
+    big_brain: String,
+    no_brain: String,
+    just_brain: String,
+    big_gay: Vec<String>,
+    smol_gay: String,
+    no_gay: String,
 }
 
 lazy_static! {
@@ -42,6 +45,8 @@ async fn main() {
                 commands::serverinfo::run(),
                 commands::pp::run(),
                 commands::iq::run(),
+                commands::gay::run(),
+                commands::embed::run(),
             ],
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
@@ -50,8 +55,8 @@ async fn main() {
         })
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                //poise::builtins::register_in_guild(ctx, &framework.options().commands, 885976189049651200.into()).await?;
+                //poise::builtins::register_globally(ctx, &framework.options().commands).await?;
+                poise::builtins::register_in_guild(ctx, &framework.options().commands, 885976189049651200.into()).await?;
                 Ok(Data {})
             })
         })

@@ -31,15 +31,15 @@ pub async fn run(
         (186.0 * colour_thingy) as u8,
     );
     let emoji = if iq >= 110.0 {
-        &CONFIG.emojis.bigbrain
+        &CONFIG.emojis.big_brain
     } else if 90.0 >= iq {
-        &CONFIG.emojis.nobrain
+        &CONFIG.emojis.no_brain
     } else {
-        &CONFIG.emojis.justbrain
+        &CONFIG.emojis.just_brain
     };
 
     let embed = CreateEmbed::default()
-        .description(format!("{} {} IQ is {:.2}", emoji, user, iq,))
+        .description(format!("{} {} IQ is {:.2}", emoji, user, iq))
         .colour(colour);
 
     ctx.send(CreateReply::default().embed(embed)).await?;

@@ -26,9 +26,9 @@ pub async fn run(
     //which will just convert it to u8 and max it to 255
     let colour_thingy: f64 = pp_size / 22.0;
     let colour = serenity::Colour::from_rgb(
-        (196.0 * colour_thingy) as u8,
-        (167.0 * colour_thingy) as u8,
-        (231.0 * colour_thingy) as u8,
+        (235.0 * colour_thingy) as u8,
+        (111.0 * colour_thingy) as u8,
+        (146.0 * colour_thingy) as u8,
     );
 
     let embed = CreateEmbed::default()
