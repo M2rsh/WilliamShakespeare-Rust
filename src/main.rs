@@ -15,12 +15,14 @@ mod commands;
 pub struct Data {} // User data, which is stored and accessible in all command invocations
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
-pub static VERSION: &str = "1.1.0";
+pub static VERSION: &str = "1.1.1";
 
 #[derive(Deserialize)]
 struct ConfigStruct {
     discord_token: String,
-    rig_ids: Vec<u64>,
+    certified_big_pp: Vec<u64>,
+    certified_big_brain: Vec<u64>,
+    ultra_gay: Vec<u64>,
     emojis: Emojis,
 }
 
@@ -36,6 +38,7 @@ struct Emojis {
 
 lazy_static! {
     static ref CONFIG: ConfigStruct = ConfigStruct::from_config_file("Settings.toml").unwrap();
+    static ref UPTIME: std::time::Instant = std::time::Instant::now();
 }
 
 #[tokio::main]

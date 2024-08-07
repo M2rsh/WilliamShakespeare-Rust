@@ -1,4 +1,4 @@
-use crate::{Context, Error, VERSION};
+use crate::{Context, Error, VERSION, UPTIME};
 use poise::{
     serenity_prelude::{CreateActionRow, CreateButton, CreateEmbed},
     CreateReply,
@@ -18,6 +18,7 @@ pub async fn run(ctx: Context<'_>) -> Result<(), Error> {
         .description("I'm a Discord bot written in Rust. (Work in Progress)")
         .field("Version", VERSION, true)
         .field("Contributors", "<@846298981797724161>", true)
+        .field("Uptime", format!("{:.2?}", UPTIME.elapsed()), true)
         .colour(0x31748f);
     let action_row = CreateActionRow::Buttons(vec![
         CreateButton::new_link("https://github.com/M2rsh/WilliamShakespeare-Rust")

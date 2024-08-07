@@ -13,7 +13,11 @@ pub async fn run(
 ) -> Result<(), Error> {
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
-    let gay: f64 = rand::thread_rng().gen_range(0.0..100.0);
+    let gay: f64 = if CONFIG.ultra_gay.contains(&user.id.get()) {
+        rand::thread_rng().gen_range(90.0..10000.0)
+    } else {
+        rand::thread_rng().gen_range(0.0..100.0)
+    };
 
     let colour_thingy: f64 = gay / 100.0;
     let colour = serenity::Colour::from_rgb(

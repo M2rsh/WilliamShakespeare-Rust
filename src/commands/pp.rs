@@ -12,7 +12,7 @@ pub async fn run(
 ) -> Result<(), Error> {
     let user = user.as_ref().unwrap_or_else(|| ctx.author());
 
-    let pp_size: f64 = if CONFIG.rig_ids.contains(&user.id.get()) {
+    let pp_size: f64 = if CONFIG.certified_big_pp.contains(&user.id.get()) {
         Normal::new(100000000.0, 10000000.0)
             .unwrap()
             .sample(&mut rand::thread_rng())
